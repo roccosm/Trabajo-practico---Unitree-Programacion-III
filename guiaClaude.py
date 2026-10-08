@@ -28,8 +28,7 @@ def cargar_mapa(nombre_archivo):
     archivo.close()
 
     # 1. Que esten todas las claves
-    claves = ["grilla", "inicio", "destino", "tamano_celda_metros",
-              "orientacion_inicial", "maximo_pasos"]
+    claves = ["grilla", "inicio", "destino", "tamano_celda_metros","orientacion_inicial", "maximo_pasos"]
     for clave in claves:
         if clave not in datos:
             raise ValueError("Falta la clave: " + clave)
@@ -78,13 +77,11 @@ def cargar_mapa(nombre_archivo):
     mapa["maximo_pasos"] = maximo_pasos
     return mapa
 
-
 # ------------------------------------------------------------
 # FUNCIONES DEL GREEDY
 # ------------------------------------------------------------
 def distancia_manhattan(fila, columna, fila_destino, columna_destino):
     return abs(fila - fila_destino) + abs(columna - columna_destino)
-
 
 def obtener_candidatos(fila, columna):
     # El orden de esta lista es el criterio de desempate
@@ -94,7 +91,6 @@ def obtener_candidatos(fila, columna):
     candidatos.append(("ABAJO",     fila + 1, columna))
     candidatos.append(("IZQUIERDA", fila,     columna - 1))
     return candidatos
-
 
 def seleccionar(candidatos, fila_destino, columna_destino):
     distancias = []
@@ -107,7 +103,6 @@ def seleccionar(candidatos, fila_destino, columna_destino):
     for i in range(len(distancias)):
         if distancias[i] == menor:
             return candidatos[i]
-
 
 def factibilidad(fila, columna, matriz, ruta):
     filas = len(matriz)
@@ -126,7 +121,6 @@ def factibilidad(fila, columna, matriz, ruta):
     else:
         return True
 
-
 def solucion(ruta, fila_destino, columna_destino):
     ultima = ruta[-1]
     if ultima[0] == fila_destino and ultima[1] == columna_destino:
@@ -134,10 +128,8 @@ def solucion(ruta, fila_destino, columna_destino):
     else:
         return False
 
-
 def funcion_objetivo(ruta):
     return len(ruta) - 1
-
 
 def planificar(matriz, inicio, destino, limite_pasos):
     fila_destino, columna_destino = destino
@@ -167,7 +159,6 @@ def planificar(matriz, inicio, destino, limite_pasos):
 
     return ruta, estado
 
-
 # ------------------------------------------------------------
 # RESULTADO Y CAUSA
 # ------------------------------------------------------------
@@ -179,7 +170,6 @@ def obtener_causa(estado, ruta, destino, limite_pasos):
                 ": todos los vecinos son borde, obstaculo, zona prohibida o ya visitados.")
     else:
         return "Se alcanzo el maximo de " + str(limite_pasos) + " pasos permitido."
-
 
 # ------------------------------------------------------------
 # TRADUCCION A INSTRUCCIONES PARA EL ROBOT
@@ -193,7 +183,6 @@ def obtener_orientacion(celda_actual, celda_siguiente):
         return "SUR"
     else:
         return "OESTE"
-
 
 def calcular_giro(orientacion_actual, orientacion_nueva):
     orientaciones = ["NORTE", "ESTE", "SUR", "OESTE"]
@@ -209,7 +198,6 @@ def calcular_giro(orientacion_actual, orientacion_nueva):
         return "GIRAR IZQUIERDA 90°"
     else:
         return "GIRAR 180°"
-
 
 def traducir_ruta(ruta, orientacion_inicial, tamano_celda):
     instrucciones = []
@@ -227,7 +215,6 @@ def traducir_ruta(ruta, orientacion_inicial, tamano_celda):
         instrucciones.append("AVANZAR " + metros + " m")
 
     return instrucciones
-
 
 # ------------------------------------------------------------
 # REPRESENTACION TEXTUAL DE LA RUTA
@@ -262,7 +249,6 @@ def dibujar_ruta(mapa, ruta):
         lineas.append(" " + str(f) + "  " + " ".join(tablero[f]))
     return lineas
 
-
 # ------------------------------------------------------------
 # PROGRAMA PRINCIPAL
 # ------------------------------------------------------------
@@ -276,9 +262,7 @@ def ejecutar_mapa(nombre_archivo):
     lineas.append("=" * 60)
     lineas.append(mapa["nombre"] + "  (" + os.path.basename(nombre_archivo) + ")")
     lineas.append("=" * 60)
-    lineas.append("Inicio: " + str(mapa["inicio"]) + " | Destino: " + str(mapa["destino"]) +
-                  " | Celda: " + str(mapa["tamano_celda"]) + " m | Orientacion inicial: " +
-                  mapa["orientacion"] + " | Maximo de pasos: " + str(mapa["maximo_pasos"]))
+    lineas.append("Inicio: " + str(mapa["inicio"]) + " | Destino: " + str(mapa["destino"]) +" | Celda: " + str(mapa["tamano_celda"]) + " m | Orientacion inicial: " + mapa["orientacion"] + " | Maximo de pasos: " + str(mapa["maximo_pasos"]))
     lineas.append("")
     lineas.append("Estado: " + estado)
     lineas.append("Causa: " + causa)
@@ -298,19 +282,17 @@ def ejecutar_mapa(nombre_archivo):
     lineas.append("")
     return lineas
 
-
 def main():
     carpeta = os.path.dirname(os.path.abspath(__file__))
     archivos = ["mapa1.json", "mapa2.json", "mapa3.json"]
-
     texto = []
+
     for archivo in archivos:
         try:
             texto.extend(ejecutar_mapa(os.path.join(carpeta, archivo)))
         except (OSError, ValueError) as error:
             texto.append("[ERROR] " + archivo + ": " + str(error))
             texto.append("")
-
     salida = "\n".join(texto)
     print(salida)
 
@@ -318,7 +300,6 @@ def main():
     log = open(os.path.join(carpeta, "log_ejecucion.txt"), "w", encoding="utf-8")
     log.write(salida)
     log.close()
-
 
 if __name__ == "__main__":
     main()
