@@ -92,6 +92,9 @@ def planificar_ruta(matriz, inicio, destino, limite_pasos):
         visitados.add((fila_actual, columna_actual))
         pasos += 1
 
+        if (fila_actual, columna_actual) == destino:
+            return ruta, "DESTINO_ALCANZADO", pasos
+        
     return ruta, "LIMITE_DE_PASOS", pasos
 
 def cargar_mapa(nombre_archivo):
@@ -178,55 +181,106 @@ def generar_instrucciones(ruta, orientacion_inicial, tamano_celda):
 
         if giro == "DERECHA":
             instrucciones.append(str(n) + ". GIRAR DERECHA 90°")
-            n =+ 1
+            n += 1
 
         elif giro == "IZQUIERDA":
             instrucciones.append(str(n) + ". GIRAR IZQUIERDA 90°")
-            n =+ 1
+            n += 1
 
         elif giro == "MEDIA_VUELTA":
             instrucciones.append(str(n) + ". GIRAR 180°")
-            n =+ 1
+            n += 1
 
         instrucciones.append(str(n) + ". AVANZAR " + str(tamano_celda) + " m")
         orientacion_actual = direccion
-        n =+ 1
+        n += 1
 
     return instrucciones
 
 # Main
-matriz, inicio, destino, tamano_celda, orientacion_inicial, limite_pasos = cargar_mapa("Mapa1.json")
-ruta, estado, pasos = planificar_ruta(
-    matriz,
-    inicio,
-    destino,
-    limite_pasos
-)
 
-print("Ruta:", ruta)
-print("Estado:", estado)
-print("Cantidad de movimientos:", pasos)
+archivos = ["Mapa1.json", "Mapa2.json", "Mapa3.json"]
 
-instrucciones = generar_instrucciones(
-    ruta,
-    orientacion_inicial,
-    tamano_celda
-)
+for archivo in archivos:
+    print(f"\nProcesando {archivo}...")
 
-with open("instrucciones.txt", "w", encoding="utf-8") as archivo:
-    for instruccion in instrucciones:
-        archivo.write(instruccion + "\n")
+    matriz, inicio, destino, tamano_celda, orientacion_inicial, limite_pasos = cargar_mapa("Mapa1.json")
+    ruta, estado, pasos = planificar_ruta(
+        matriz,
+        inicio,
+        destino,
+        limite_pasos
+    )
 
-robot = RobotG1()
-robot.conectar()
+    print("Ruta:", ruta)
+    print("Estado:", estado)
+    print("Cantidad de movimientos:", pasos)
 
-if estado == "DESTINO_ALCANZADO":
-    ejecutar_ruta(
-        robot,
+    if estado == "DESTINO_ALCANZADO":
+        print("Causa: el robot llegó al destino")
+    elif estado == "BLOQUEADO":
+        print("Causa: no quedan candidatos factibles")
+    else:
+        print("Causa: se alcanzó el límite de pasos")
+
+    instrucciones = generar_instrucciones(
         ruta,
         orientacion_inicial,
         tamano_celda
     )
 
-robot.detenerse()
-robot.desconectar()
+    with open("instrucciones.txt", "w", encoding="utf-8") as archivo:
+        for instruccion in instrucciones:
+            archivo.write(instruccion + "\n")
+
+    robot = RobotG1()
+    robot.conectar()
+
+    if estado == "DESTINO_ALCANZADO":
+        ejecutar_ruta(
+            robot,
+            ruta,
+            orientacion_inicial,
+            tamano_celda
+        )
+
+    robot.detenerse()
+    robot.desconectar()
+
+
+
+'''
+
+Lo que hay que arreglar
+
+1. Error de sintaxis en la línea 181 (n =+). Python no la entiende y el programa ni arranca (SyntaxError). Probablemente era n += 1. Eso lleva al problema siguiente.
+
+2. La numeración de las instrucciones está mezclada. Usás n en un lugar y i+1 en otros, y el resultado se repite y salta (por ejemplo, dos instrucciones con el número 1 y otras con el 5 repetido):
+
+1. AVANZAR 0.5 m
+2. AVANZAR 0.5 m
+1. GIRAR DERECHA 90°     ← repite el 1
+3. AVANZAR 0.5 m
+
+La solución es usar un solo contador n en todas las ramas y sumar 1 después de cada instrucción. En el giro DERECHA va n += 1, y en todas las demás ramas, después del append, también:
+
+python
+instrucciones.append(str(n) + ". GIRAR IZQUIERDA 90°")
+n += 1
+
+3. Si llega justo en el último paso permitido, lo marca como límite. Con limite_pasos = 8 en el Mapa 1, el robot llega a (4,4), pero devuelve LIMITE_DE_PASOS, porque el while pasos < limite_pasos termina antes de chequear si llegó. Con los límites reales (30, 40 y 50) no se nota, pero el caso borde se prueba fácil y es lo que el docente puede intentar. Solución: antes del return ..., "LIMITE_DE_PASOS" agregar:
+
+python
+    if (fila_actual, columna_actual) == destino:
+        return ruta, "DESTINO_ALCANZADO", pasos
+    return ruta, "LIMITE_DE_PASOS", pasos
+
+4. cargar_mapa no valida nada. La rúbrica dice “carga y valida correctamente la grilla y los metadatos” (15 puntos). Con un JSON roto (un 7 en la grilla y el inicio sobre un obstáculo), lo acepta sin avisar. Hay que agregar al menos las validaciones de claves, valores de la grilla, inicio y destino dentro de la grilla y en celda libre.
+
+Otras cosas a considerar
+Solo corre Mapa1.json. El TP pide probar los tres mapas con logs. Conviene un ciclo for sobre los tres archivos, o recibir el nombre por argumento.
+Se conecta al robot siempre al final. Si el simulador está cerrado, el programa da error de conexión, aunque la planificación y el archivo instrucciones.txt ya estén hechos. Y si hacés import del archivo desde otro lado, falla en la primera línea con ModuleNotFoundError porque g1_student_api solo existe dentro de UnitreeMujocoOficial.
+Falta el resultado con causa y la representación de la ruta, que son entregables (puntos 10 y la Sección 8). print("Estado:", estado) informa el resultado pero no la causa.
+El tamaño de celda sale 0.5 y el enunciado escribe 0,50 m. Es un detalle de formato.
+No hay solucion ni funcion_objetivo. Está bien que se integren en planificar_ruta si quieren achicar, pero en el informe la definición habla de cuatro funciones, así que conviene que quede claro dónde está cada una.
+'''

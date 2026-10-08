@@ -13,4 +13,4 @@ Consignas:
 9. Finalizar al alcanzar el destino, al quedar sin candidatos válidos o al superar el máximo de pasos. LISTO
 10. Informar claramente el resultado y la causa de finalización. VER SI AGREGAR CAUSA
 11. Traducir la ruta a instrucciones de orientación y desplazamiento para el robot .txt LISTO
-12. Probar el programa con los tres mapas provistos y analizar sus resultados.  simular
+12. Probar el programa con los tres mapas provistos y analizar sus resultados.  FALTA
