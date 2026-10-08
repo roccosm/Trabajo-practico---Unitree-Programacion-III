@@ -199,53 +199,51 @@ def generar_instrucciones(ruta, orientacion_inicial, tamano_celda):
 
 # Main
 
-archivos = ["Mapa1.json", "Mapa2.json", "Mapa3.json"]
 
-for archivo in archivos:
-    print(f"\nProcesando {archivo}...")
+archivo = "Mapa1.json"
+matriz, inicio, destino, tamano_celda, orientacion_inicial, limite_pasos = cargar_mapa(archivo)
+ruta, estado, pasos = planificar_ruta(
+    matriz,
+    inicio,
+    destino,
+    limite_pasos
+)
 
-    matriz, inicio, destino, tamano_celda, orientacion_inicial, limite_pasos = cargar_mapa("Mapa1.json")
-    ruta, estado, pasos = planificar_ruta(
-        matriz,
-        inicio,
-        destino,
-        limite_pasos
-    )
+print("Ruta:", ruta)
+print("Estado:", estado)
+print("Cantidad de movimientos:", pasos)
 
-    print("Ruta:", ruta)
-    print("Estado:", estado)
-    print("Cantidad de movimientos:", pasos)
+if estado == "DESTINO_ALCANZADO":
+    print("Causa: el robot llegó al destino")
+elif estado == "BLOQUEADO":
+    print("Causa: no quedan candidatos factibles")
+else:
+    print("Causa: se alcanzó el límite de pasos")
 
-    if estado == "DESTINO_ALCANZADO":
-        print("Causa: el robot llegó al destino")
-    elif estado == "BLOQUEADO":
-        print("Causa: no quedan candidatos factibles")
-    else:
-        print("Causa: se alcanzó el límite de pasos")
+instrucciones = generar_instrucciones(
+    ruta,
+    orientacion_inicial,
+    tamano_celda
+)
 
-    instrucciones = generar_instrucciones(
+with open("instrucciones.txt", "w", encoding="utf-8") as txt:
+    txt.write("Instrucciones para " + archivo + ":\n")
+    for instruccion in instrucciones:
+        txt.write(instruccion + "\n")
+
+robot = RobotG1()
+robot.conectar()
+
+if estado == "DESTINO_ALCANZADO":
+    ejecutar_ruta(
+        robot,
         ruta,
         orientacion_inicial,
         tamano_celda
     )
 
-    with open("instrucciones.txt", "w", encoding="utf-8") as archivo:
-        for instruccion in instrucciones:
-            archivo.write(instruccion + "\n")
-
-    robot = RobotG1()
-    robot.conectar()
-
-    if estado == "DESTINO_ALCANZADO":
-        ejecutar_ruta(
-            robot,
-            ruta,
-            orientacion_inicial,
-            tamano_celda
-        )
-
-    robot.detenerse()
-    robot.desconectar()
+robot.detenerse()
+robot.desconectar()
 
 
 
