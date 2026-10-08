@@ -16,7 +16,7 @@ def obtener_candidatos(fila, columna):
 
     return candidatos
 
-def factibilidad(fila, columna, matriz, ruta):
+def factibilidad(fila, columna, matriz, visitados):
     filas = len(matriz)
     columnas = len(matriz[0])
 
@@ -28,7 +28,7 @@ def factibilidad(fila, columna, matriz, ruta):
         return False
     elif matriz[fila][columna] == 2:         # Zona prohibida
         return False
-    elif (fila, columna) in ruta:            # Ya visitada
+    elif (fila, columna) in visitados:            # Ya visitada
         return False
     else:
         return True
@@ -164,8 +164,47 @@ def ejecutar_ruta(robot, ruta, orientacion_inicial, tamano_celda):
             giro=0.0,
             tiempo=1.25
         )
+'''
+Consignas: 
+1. Leer el mapa desde un archivo JSON provisto por la cátedra. LISTO
+2. Obtener la grilla, la posición inicial, el destino, el tamaño de cada celda y la orientación inicial. LISTO
+3. Permitir movimientos en cuatro direcciones: arriba, abajo, izquierda y derecha. LISTO
+4. Generar, en cada paso, el conjunto de movimientos posibles. LISTO
+5. Descartar posiciones fuera de la grilla, obstáculos, zonas prohibidas y posiciones ya visitadas. LISTO
+6. Calcular la distancia Manhattan desde cada candidato hasta el destino. LISTO
+7. Seleccionar el candidato de menor distancia y aplicar un criterio fijo de desempate. LISTO
+8. Registrar la ruta recorrida y la cantidad de movimientos. PARCIAL
+9. Finalizar al alcanzar el destino, al quedar sin candidatos válidos o al superar el máximo de pasos. LISTO
+10. Informar claramente el resultado y la causa de finalización. LISTO
+11. Traducir la ruta a instrucciones de orientación y desplazamiento para el robot .txt FALTA
+12. Probar el programa con los tres mapas provistos y analizar sus resultados.  simular
 
-#Main
+'''
+
+# Main
+
+matriz, inicio, destino, tamano_celda, orientacion_inicial, limite_pasos = cargar_mapa("Mapa1.json")
+
+ruta, estado = planificar_ruta(
+    matriz,
+    inicio,
+    destino,
+    limite_pasos
+)
+
+print("Ruta:", ruta)
+print("Estado:", estado)
 
 robot = RobotG1()
 robot.conectar()
+
+if estado == "DESTINO_ALCANZADO":
+    ejecutar_ruta(
+        robot,
+        ruta,
+        orientacion_inicial,
+        tamano_celda
+    )
+
+robot.detenerse()
+robot.desconectar()
