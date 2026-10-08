@@ -1,6 +1,5 @@
 import json
 from g1_student_api import RobotG1
-
 #Funciones greedy
 
 def distancia_manhattan(fila, columna, fila_destino, columna_destino):
@@ -68,7 +67,7 @@ def planificar_ruta(matriz, inicio, destino, limite_pasos):
 
     while pasos < limite_pasos:
         if (fila_actual, columna_actual) == destino:
-            return ruta, "DESTINO_ALCANZADO"
+            return ruta, "DESTINO_ALCANZADO", pasos
 
         candidatos = obtener_candidatos(fila_actual, columna_actual)
 
@@ -78,7 +77,7 @@ def planificar_ruta(matriz, inicio, destino, limite_pasos):
                 candidatos_factibles.append(candidato)
 
         if len(candidatos_factibles) == 0:
-            return ruta, "BLOQUEADO"
+            return ruta, "BLOQUEADO", pasos
 
         mejor_candidato = seleccionar(
             candidatos_factibles,
@@ -93,7 +92,7 @@ def planificar_ruta(matriz, inicio, destino, limite_pasos):
         visitados.add((fila_actual, columna_actual))
         pasos += 1
 
-    return ruta, "LIMITE_DE_PASOS"
+    return ruta, "LIMITE_DE_PASOS", pasos
 
 def cargar_mapa(nombre_archivo):
     with open(nombre_archivo, "r", encoding="utf-8") as archivo:
@@ -149,12 +148,14 @@ def ejecutar_ruta(robot, ruta, orientacion_inicial, tamano_celda):
 
         if giro == "DERECHA":
             robot.movimiento(adelante=0.0, costado=0.0, giro=-0.5, tiempo=3.2)
+            print("Girar a la derecha 90°")
 
         elif giro == "IZQUIERDA":
             robot.movimiento(adelante=0.0, costado=0.0, giro=0.5, tiempo=3.2)
-
+            print("Girar a la izquierda 90°")
         elif giro == "MEDIA_VUELTA":
             robot.movimiento(adelante=0.0, costado=0.0, giro=0.5, tiempo=6.4)
+            print("Girar 180°")
 
         orientacion_actual = direccion
 
@@ -164,28 +165,33 @@ def ejecutar_ruta(robot, ruta, orientacion_inicial, tamano_celda):
             giro=0.0,
             tiempo=1.25
         )
-'''
-Consignas: 
-1. Leer el mapa desde un archivo JSON provisto por la cátedra. LISTO
-2. Obtener la grilla, la posición inicial, el destino, el tamaño de cada celda y la orientación inicial. LISTO
-3. Permitir movimientos en cuatro direcciones: arriba, abajo, izquierda y derecha. LISTO
-4. Generar, en cada paso, el conjunto de movimientos posibles. LISTO
-5. Descartar posiciones fuera de la grilla, obstáculos, zonas prohibidas y posiciones ya visitadas. LISTO
-6. Calcular la distancia Manhattan desde cada candidato hasta el destino. LISTO
-7. Seleccionar el candidato de menor distancia y aplicar un criterio fijo de desempate. LISTO
-8. Registrar la ruta recorrida y la cantidad de movimientos. PARCIAL
-9. Finalizar al alcanzar el destino, al quedar sin candidatos válidos o al superar el máximo de pasos. LISTO
-10. Informar claramente el resultado y la causa de finalización. LISTO
-11. Traducir la ruta a instrucciones de orientación y desplazamiento para el robot .txt FALTA
-12. Probar el programa con los tres mapas provistos y analizar sus resultados.  simular
+        print("Avanzar " + str(tamano_celda) + " m")
 
-'''
+def generar_instrucciones(ruta, orientacion_inicial, tamano_celda):
+    instrucciones = []
+    orientacion_actual = orientacion_inicial
+
+    for i in range(len(ruta) - 1):
+        direccion = obtener_direccion(ruta[i], ruta[i + 1])
+        giro = calcular_giro(orientacion_actual, direccion)
+
+        if giro == "DERECHA":
+            instrucciones.append(str(i+1) + ". GIRAR DERECHA 90°")
+
+        elif giro == "IZQUIERDA":
+            instrucciones.append(str(i+1) + ". GIRAR IZQUIERDA 90°")
+
+        elif giro == "MEDIA_VUELTA":
+            instrucciones.append(str(i+1) + ". GIRAR 180°")
+
+        instrucciones.append(str(i+1) + ". AVANZAR " + str(tamano_celda) + " m")
+        orientacion_actual = direccion
+
+    return instrucciones
 
 # Main
-
 matriz, inicio, destino, tamano_celda, orientacion_inicial, limite_pasos = cargar_mapa("Mapa1.json")
-
-ruta, estado = planificar_ruta(
+ruta, estado, pasos = planificar_ruta(
     matriz,
     inicio,
     destino,
@@ -194,9 +200,28 @@ ruta, estado = planificar_ruta(
 
 print("Ruta:", ruta)
 print("Estado:", estado)
+print("Cantidad de movimientos:", pasos)
+
+instrucciones = generar_instrucciones(
+    ruta,
+    orientacion_inicial,
+    tamano_celda
+)
+
+with open("instrucciones.txt", "w", encoding="utf-8") as archivo:
+    for instruccion in instrucciones:
+        archivo.write(instruccion + "\n")
 
 robot = RobotG1()
 robot.conectar()
+
+if estado == "DESTINO_ALCANZADO":
+    ejecutar_ruta(
+        robot,
+        ruta,
+        orientacion_inicial,
+        tamano_celda
+    )
 
 if estado == "DESTINO_ALCANZADO":
     ejecutar_ruta(
