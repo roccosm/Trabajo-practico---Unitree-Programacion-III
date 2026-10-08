@@ -170,22 +170,27 @@ def ejecutar_ruta(robot, ruta, orientacion_inicial, tamano_celda):
 def generar_instrucciones(ruta, orientacion_inicial, tamano_celda):
     instrucciones = []
     orientacion_actual = orientacion_inicial
+    n = 1
 
     for i in range(len(ruta) - 1):
         direccion = obtener_direccion(ruta[i], ruta[i + 1])
         giro = calcular_giro(orientacion_actual, direccion)
 
         if giro == "DERECHA":
-            instrucciones.append(str(i+1) + ". GIRAR DERECHA 90°")
+            instrucciones.append(str(n) + ". GIRAR DERECHA 90°")
+            n =+ 1
 
         elif giro == "IZQUIERDA":
-            instrucciones.append(str(i+1) + ". GIRAR IZQUIERDA 90°")
+            instrucciones.append(str(n) + ". GIRAR IZQUIERDA 90°")
+            n =+ 1
 
         elif giro == "MEDIA_VUELTA":
-            instrucciones.append(str(i+1) + ". GIRAR 180°")
+            instrucciones.append(str(n) + ". GIRAR 180°")
+            n =+ 1
 
-        instrucciones.append(str(i+1) + ". AVANZAR " + str(tamano_celda) + " m")
+        instrucciones.append(str(n) + ". AVANZAR " + str(tamano_celda) + " m")
         orientacion_actual = direccion
+        n =+ 1
 
     return instrucciones
 
@@ -214,14 +219,6 @@ with open("instrucciones.txt", "w", encoding="utf-8") as archivo:
 
 robot = RobotG1()
 robot.conectar()
-
-if estado == "DESTINO_ALCANZADO":
-    ejecutar_ruta(
-        robot,
-        ruta,
-        orientacion_inicial,
-        tamano_celda
-    )
 
 if estado == "DESTINO_ALCANZADO":
     ejecutar_ruta(
