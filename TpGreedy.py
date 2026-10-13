@@ -1,14 +1,13 @@
 import json
 import os
 import sys
-
+from g1_student_api import RobotG1
 
 carpeta = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, carpeta)
 sys.path.insert(0, os.path.dirname(carpeta))
 os.chdir(carpeta)  # los JSON se buscan junto a este archivo
 
-from g1_student_api import RobotG1
 #Funciones greedy
 
 def distancia_manhattan(fila, columna, fila_destino, columna_destino):
