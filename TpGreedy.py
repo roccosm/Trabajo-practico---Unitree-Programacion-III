@@ -2,8 +2,7 @@ import json
 import os
 import sys
 
-# Rutas: sirve si este archivo esta junto a g1_student_api.py (carpeta
-# UnitreeMujocoOficial) o dentro de la carpeta examples
+
 carpeta = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, carpeta)
 sys.path.insert(0, os.path.dirname(carpeta))
@@ -111,12 +110,46 @@ def cargar_mapa(nombre_archivo):
     with open(nombre_archivo, "r", encoding="utf-8") as archivo:
         datos = json.load(archivo)
 
+    
+    claves = ["grilla", "inicio", "destino", "tamano_celda_metros","orientacion_inicial", "maximo_pasos"]
+    for clave in claves:
+        if clave not in datos:
+            raise ValueError("Falta la clave '" + clave + "' en " + nombre_archivo)
+
     matriz = datos["grilla"]
     inicio = tuple(datos["inicio"])
     destino = tuple(datos["destino"])
     tamano_celda = datos["tamano_celda_metros"]
     orientacion_inicial = datos["orientacion_inicial"]
     limite_pasos = datos["maximo_pasos"]
+
+    #Validaciones
+    if len(matriz) == 0 or len(matriz[0]) == 0:
+        raise ValueError("La grilla esta vacia")
+    columnas = len(matriz[0])
+    for fila in matriz:
+        if len(fila) != columnas:
+            raise ValueError("La grilla no es rectangular")
+        for valor in fila:
+            if valor not in (0, 1, 2):
+                raise ValueError("Valor invalido en la grilla: " + str(valor))
+
+    #Validaciones
+    for nombre, punto in (("inicio", inicio), ("destino", destino)):
+        if len(punto) != 2:
+            raise ValueError("El " + nombre + " debe tener fila y columna")
+        if punto[0] < 0 or punto[0] >= len(matriz) or punto[1] < 0 or punto[1] >= columnas:
+            raise ValueError("El " + nombre + " esta fuera de la grilla")
+        if matriz[punto[0]][punto[1]] != 0:
+            raise ValueError("El " + nombre + " no esta en una celda libre")
+
+#Validaciones
+    if orientacion_inicial not in ("NORTE", "ESTE", "SUR", "OESTE"):
+        raise ValueError("Orientacion inicial invalida: " + str(orientacion_inicial))
+    if tamano_celda <= 0:
+        raise ValueError("El tamano de celda debe ser mayor que 0")
+    if limite_pasos <= 0:
+        raise ValueError("El maximo de pasos debe ser mayor que 0")
 
     return matriz, inicio, destino, tamano_celda, orientacion_inicial, limite_pasos
 
