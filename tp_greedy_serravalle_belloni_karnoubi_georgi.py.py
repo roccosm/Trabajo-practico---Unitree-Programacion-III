@@ -122,8 +122,7 @@ def cargar_mapa(nombre_archivo):
     orientacion_inicial = datos["orientacion_inicial"]
     limite_pasos = datos["maximo_pasos"]
 
-    #Validaciones
-    if len(matriz) == 0 or len(matriz[0]) == 0:
+    if len(matriz) == 0 or len(matriz[0]) == 0:    #Validaciones
         raise ValueError("La grilla esta vacia")
     columnas = len(matriz[0])
     for fila in matriz:
@@ -133,8 +132,7 @@ def cargar_mapa(nombre_archivo):
             if valor not in (0, 1, 2):
                 raise ValueError("Valor invalido en la grilla: " + str(valor))
 
-    #Validaciones
-    for nombre, punto in (("inicio", inicio), ("destino", destino)):
+    for nombre, punto in (("inicio", inicio), ("destino", destino)):    #Validaciones
         if len(punto) != 2:
             raise ValueError("El " + nombre + " debe tener fila y columna")
         if punto[0] < 0 or punto[0] >= len(matriz) or punto[1] < 0 or punto[1] >= columnas:
@@ -142,8 +140,7 @@ def cargar_mapa(nombre_archivo):
         if matriz[punto[0]][punto[1]] != 0:
             raise ValueError("El " + nombre + " no esta en una celda libre")
 
-#Validaciones
-    if orientacion_inicial not in ("NORTE", "ESTE", "SUR", "OESTE"):
+    if orientacion_inicial not in ("NORTE", "ESTE", "SUR", "OESTE"):    #Validaciones
         raise ValueError("Orientacion inicial invalida: " + str(orientacion_inicial))
     if tamano_celda <= 0:
         raise ValueError("El tamano de celda debe ser mayor que 0")
